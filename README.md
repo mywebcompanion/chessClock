@@ -1,2 +1,2 @@
 # chessClock
-This is a simple chess clock for built using React Native.
+This is a simple chess clock built using React Native.
