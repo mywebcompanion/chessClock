@@ -23,14 +23,17 @@ export class Home extends Component {
     this.state = {
       initialWhiteTime: '05:00',
       initialBlackTime: '05:00',
+      currentWhiteTime: '05:00',
+      currentBlackTime: '05:00',
       compensation: '00:05',
       compensationType: 'INCREMENT',
+      countDownInterval: null,
       gameStarted: false,
       gameInProgress: false,
-      whiteMoves: 0,
-      blackMoves: 0,
+      resetDialogVisible: false,
       playerTurn: null,
-      resetDialogVisible: false
+      whiteMoves: 0,
+      blackMoves: 0
     };
   }
 
@@ -39,18 +42,13 @@ export class Home extends Component {
   };
 
   resetClock() {
-    var resetDialogVisible = this.state.resetDialogVisible;
-
     this.setState({
-      resetDialogVisible: !resetDialogVisible
+      resetDialogVisible: !this.state.resetDialogVisible
     });
   }
 
   startClock() {
-    var resetDialogVisible = this.state.resetDialogVisible;
-    var gameStarted = this.state.gameStarted;
-
-    if(gameStarted || resetDialogVisible) {
+    if(this.state.gameStarted || this.state.resetDialogVisible) {
       this.setState({
         gameStarted: false,
         gameInProgress: false,
@@ -59,23 +57,58 @@ export class Home extends Component {
         whiteMoves: 0,
         blackMoves: 0
       });
+      clearInterval(this.state.countDownInterval);
     } else {
       this.setState({
         gameStarted: true,
         gameInProgress: true,
         resetDialogVisible: false,
-        playerTurn: 'white'
+        playerTurn: 'white',
+        countDownInterval: setInterval(() => this.countDown('white'), 1000)
       });
     }
+
+    this.setState({
+      currentWhiteTime: this.state.initialWhiteTime,
+      currentBlackTime: this.state.initialBlackTime
+    });
+  }
+
+  convertToSeconds(time) {
+    return time.split(':').reduce((acc, curr) => (60 * parseInt(acc, 10)) + parseInt(curr, 10));
+  }
+
+  countDown(player) {
+    var currentTime = this.state.playerTurn == 'white' ? this.state.currentWhiteTime : this.state.currentBlackTime;
+    var timeInSeconds = this.convertToSeconds(currentTime);
+    timeInSeconds = timeInSeconds ? timeInSeconds - 1 : timeInSeconds;
+
+    var hours   = Math.floor(timeInSeconds / 3600);
+    var minutes = Math.floor((timeInSeconds - (hours * 3600)) / 60);
+    var seconds = timeInSeconds - (hours * 3600) - (minutes * 60);
+
+    hours = hours < 10 ? '0' + hours : '' + hours;
+    minutes = minutes < 10 ? '0' + minutes : '' + minutes;
+    seconds = seconds < 10 ? '0' + seconds : '' + seconds;
+
+    var timeLeft = (hours != '00' ? hours + ':' : '') + minutes + ':' + seconds;
+    this.setState({
+      currentWhiteTime: this.state.playerTurn == 'white' ? timeLeft : this.state.currentWhiteTime,
+      currentBlackTime: this.state.playerTurn == 'black' ? timeLeft : this.state.currentBlackTime
+    });
   }
 
   pauseClock() {
-    var gameStarted = this.state.gameStarted;
-    var gameInProgress = this.state.gameInProgress;
-
-    if(gameStarted) {
+    if(this.state.gameStarted) {
+      if(this.state.gameInProgress) {
+        clearInterval(this.state.countDownInterval);
+      }else {
+        this.setState({
+          countDownInterval: setInterval(() => this.countDown(this.state.playerTurn), 1000)
+        });
+      }
       this.setState({
-        gameInProgress: !gameInProgress
+        gameInProgress: !this.state.gameInProgress,
       });
     } else {
       this.startClock();
@@ -83,44 +116,38 @@ export class Home extends Component {
   }
 
   pressClock(player) {
-    var playerTurn = this.state.playerTurn;
-    var whiteMoves = this.state.whiteMoves;
-    var blackMoves = this.state.blackMoves;
+    clearInterval(this.state.countDownInterval);
 
     this.setState({
-      playerTurn: playerTurn == 'white' ? 'black' : 'white',
-      whiteMoves: playerTurn == 'white' ? whiteMoves + 1 : whiteMoves,
-      blackMoves: playerTurn == 'black' ? blackMoves + 1 : blackMoves
+      playerTurn: this.state.playerTurn == 'white' ? 'black' : 'white',
+      whiteMoves: this.state.playerTurn == 'white' ? this.state.whiteMoves + 1 : this.state.whiteMoves,
+      blackMoves: this.state.playerTurn == 'black' ? this.state.blackMoves + 1 : this.state.blackMoves,
+      countDownInterval: setInterval(() => this.countDown(this.state.playerTurn), 1000)
     });
     tick.play();
   }
 
   render() {
-    var gameInProgress = this.state.gameInProgress;
-    var playerTurn = this.state.playerTurn;
-    var playButton = gameInProgress ? 'pause' : 'play';
-    var whiteColor = playerTurn == 'white' ? '#3399ff' : '#808080';
-    var blackColor = playerTurn == 'black' ? '#3399ff' : '#808080';
-    var whiteMoves = this.state.whiteMoves;
-    var blackMoves = this.state.blackMoves;
-    var resetDialogVisible = this.state.resetDialogVisible;
-    var initialWhiteTime = this.state.initialWhiteTime;
-    var initialBlackTime = this.state.initialBlackTime;
+    var whiteTime = this.state.gameStarted ? this.state.currentWhiteTime : this.state.initialWhiteTime;
+    var blackTime = this.state.gameStarted ? this.state.currentBlackTime : this.state.initialBlackTime;
+    var whiteColor = this.state.playerTurn == 'white' ? (this.convertToSeconds(whiteTime) ? '#3399ff' : '#ff0000') : '#808080';
+    var blackColor = this.state.playerTurn == 'black' ? (this.convertToSeconds(blackTime) ? '#3399ff' : '#ff0000') : '#808080';
+    var playButton = this.state.gameInProgress ? 'pause' : 'play';
 
     return (
       <View style={{flex: 1, padding: 10}}>
         <TouchableWithoutFeedback
          disabled={
-           (gameInProgress && playerTurn == 'white') ? false : true
+           (this.state.gameInProgress && this.state.playerTurn == 'white' && this.convertToSeconds(whiteTime)) ? false : true
          }
          onPress={() => this.pressClock('white')}
         >
           <View style={[{flex: 1, backgroundColor: whiteColor, borderRadius: 20}]}>
             <View style={[styles.center, {flex: 0.3}]}>
-              <Text style={[styles.moves, {transform: [{ rotate: '180deg'}]}]}>MOVES: {whiteMoves}</Text>
+              <Text style={[styles.moves, {transform: [{ rotate: '180deg'}]}]}>MOVES: {this.state.whiteMoves}</Text>
             </View>
             <View style={[styles.center, {flex: 1}]}>
-              <Text style={[styles.time, {transform: [{ rotate: '180deg'}]}]}>{initialWhiteTime}</Text>
+              <Text style={[styles.time, {transform: [{ rotate: '180deg'}]}]}>{whiteTime}</Text>
             </View>
             <View style={[styles.center, {flex: 0.3}]}>
               <Icon name='chess-king' color='white' style={{transform: [{ rotate: '180deg'}]}} size={40} />
@@ -129,25 +156,31 @@ export class Home extends Component {
         </TouchableWithoutFeedback>
         <View style={[styles.center, styles.options]}>
           {
-            !gameInProgress ? (<View style={[styles.center, {flex: 1}]}>
-              <Icon
-                name='cog'
-                size={50}
-                color='black'
-                onPress={() => this.props.navigation.navigate('settings', {onSelect: this.onSelect})}
-              />
-            </View>) : null
+            !this.state.gameInProgress || !(this.convertToSeconds(whiteTime) && this.convertToSeconds(blackTime)) ? (
+              <View style={[styles.center, {flex: 1}]}>
+                <Icon
+                  name='cog'
+                  size={50}
+                  color='black'
+                  onPress={() => this.props.navigation.navigate('settings', {onSelect: this.onSelect})}
+                />
+              </View>
+            ) : null
           }
           <View style={[styles.center, {flex: 1}]}>
-            <Icon
-              name={playButton}
-              size={50}
-              color='black'
-              onPress={() => this.pauseClock()}
-            />
+            {
+              this.convertToSeconds(whiteTime) && this.convertToSeconds(blackTime) ? (
+                <Icon
+                  name={playButton}
+                  size={50}
+                  color='black'
+                  onPress={() => this.pauseClock()}
+                />
+              ) : clearInterval(this.state.countDownInterval)
+            }
           </View>
           {
-            !gameInProgress ? (
+            !this.state.gameInProgress || !(this.convertToSeconds(whiteTime) && this.convertToSeconds(blackTime)) ? (
               <View style={[styles.center, {flex: 1}]}>
                 <Icon
                   name='redo'
@@ -161,7 +194,7 @@ export class Home extends Component {
         </View>
         <TouchableWithoutFeedback
          disabled={
-           (gameInProgress && playerTurn == 'black') ? false : true
+           (this.state.gameInProgress && this.state.playerTurn == 'black' && this.convertToSeconds(blackTime)) ? false : true
          }
          onPress={() => this.pressClock('black')}
         >
@@ -170,15 +203,15 @@ export class Home extends Component {
               <Icon name='chess-king' color='black' size={40} />
             </View>
             <View style={[styles.center, {flex: 1}]}>
-              <Text style={[styles.time]}>{initialBlackTime}</Text>
+              <Text style={[styles.time]}>{blackTime}</Text>
             </View>
             <View style={[styles.center, {flex: 0.3}]}>
-              <Text style={[styles.moves]}>MOVES: {blackMoves}</Text>
+              <Text style={[styles.moves]}>MOVES: {this.state.blackMoves}</Text>
             </View>
           </View>
         </TouchableWithoutFeedback>
 
-        <Dialog.Container visible={resetDialogVisible}>
+        <Dialog.Container visible={this.state.resetDialogVisible}>
           <Dialog.Title style={{color: 'black'}}>
             Reset Clock
           </Dialog.Title>

@@ -84,22 +84,14 @@ export class Settings extends Component {
   }
 
   toggleTimeDialog(mode, color) {
-    var timeDialogVisible = this.state.timeDialogVisible;
-    var whiteTime = this.state.whiteTime;
-    var blackTime = this.state.blackTime;
-    var compensation = this.state.compensation;
-    var hoursList = this.state.hoursList;
-    var minutesList = this.state.minutesList;
-    var secondsList = this.state.secondsList;
-
-    var timeControl = color == 'black' ? blackTime : whiteTime;
-    var timeArray = mode == 'timeControl' ? timeControl.split(':') : compensation.split(':');
-    var hoursIndex = timeArray.length > 2 ? hoursList.indexOf(timeArray[0]) : 0;
-    var minutesIndex = timeArray.length > 2 ? minutesList.indexOf(timeArray[1]) : minutesList.indexOf(timeArray[0]);
-    var secondsIndex = secondsList.indexOf(timeArray[timeArray.length - 1]);
+    var timeControl = color == 'black' ? this.state.blackTime : this.state.whiteTime;
+    var timeArray = mode == 'timeControl' ? timeControl.split(':') : this.state.compensation.split(':');
+    var hoursIndex = timeArray.length > 2 ? this.state.hoursList.indexOf(timeArray[0]) : 0;
+    var minutesIndex = timeArray.length > 2 ? this.state.minutesList.indexOf(timeArray[1]) : this.state.minutesList.indexOf(timeArray[0]);
+    var secondsIndex = this.state.secondsList.indexOf(timeArray[timeArray.length - 1]);
 
     this.setState({
-        timeDialogVisible: !timeDialogVisible,
+        timeDialogVisible: !this.state.timeDialogVisible,
         timeDialogMode: mode,
         selectedHours: hoursIndex,
         selectedMinutes: mode == 'timeControl' ? minutesIndex : 0,
@@ -109,42 +101,27 @@ export class Settings extends Component {
   }
 
   createTime(mode) {
-    var selectedHours = this.state.selectedHours;
-    var selectedMinutes = this.state.selectedMinutes;
-    var selectedSeconds = this.state.selectedSeconds;
-    var hours = this.state.hoursList[selectedHours];
-    var minutes = this.state.minutesList[selectedMinutes];
-    var seconds = this.state.secondsList[selectedSeconds];
-    var formatColor = this.state.formatColor;
-    var whiteTime = this.state.whiteTime;
-    var blackTime = this.state.blackTime;
-    var timeDialogVisible = this.state.timeDialogVisible;
-    var compensation = this.state.compensation;
+    var hours = this.state.hoursList[this.state.selectedHours];
+    var minutes = this.state.minutesList[this.state.selectedMinutes];
+    var seconds = this.state.secondsList[this.state.selectedSeconds];
     var newTime = (hours != '00' ? (hours + ':') : '') + minutes + ':' + seconds;
 
     this.setState({
-      whiteTime: mode == 'timeControl' && formatColor != 'black' ? newTime : whiteTime,
-      blackTime: mode == 'timeControl' && formatColor != 'white' ? newTime : blackTime,
-      compensation: mode == 'compensation' ? newTime : compensation,
-      timeDialogVisible: !timeDialogVisible
+      whiteTime: mode == 'timeControl' && this.state.formatColor != 'black' ? newTime : this.state.whiteTime,
+      blackTime: mode == 'timeControl' && this.state.formatColor != 'white' ? newTime : this.state.blackTime,
+      compensation: mode == 'compensation' ? newTime : this.state.compensation,
+      timeDialogVisible: !this.state.timeDialogVisible
     });
   }
 
   goBack() {
     const { navigation } = this.props;
-
-    var whiteTime = this.state.whiteTime;
-    var blackTime = this.state.blackTime;
-    var formatType = this.state.formatType;
-    var compensation = this.state.compensation;
-    var compensationType = this.state.compensationType;
-
     navigation.goBack();
     navigation.state.params.onSelect({
-      initialWhiteTime: whiteTime,
-      initialBlackTime: formatType == 'REGULAR' ? whiteTime : blackTime,
-      compensation: compensation,
-      compensationType: compensationType,
+      initialWhiteTime: this.state.whiteTime,
+      initialBlackTime: this.state.formatType == 'REGULAR' ? this.state.whiteTime : this.state.blackTime,
+      compensation: this.state.compensation,
+      compensationType: this.state.compensationType,
       gameStarted: false,
       gameInProgress: false,
       playerTurn: null,
@@ -154,31 +131,18 @@ export class Settings extends Component {
   }
 
   render() {
-    var selectedHours = this.state.selectedHours;
-    var selectedMinutes = this.state.selectedMinutes;
-    var selectedSeconds = this.state.selectedSeconds;
-    var hours = this.state.hoursList[selectedHours];
-    var minutes = this.state.minutesList[selectedMinutes];
-    var seconds = this.state.secondsList[selectedSeconds];
-    var whiteTime = this.state.whiteTime;
-    var blackTime = this.state.blackTime;
-    var hoursList = this.state.hoursList;
-    var minutesList = this.state.minutesList;
-    var secondsList = this.state.secondsList;
-    var compensation = this.state.compensation;
-    var compensationType = this.state.compensationType;
-    var timeDialogVisible = this.state.timeDialogVisible;
-    var timeDialogMode = this.state.timeDialogMode;
-    var formatType = this.state.formatType;
+    var hours = this.state.hoursList[this.state.selectedHours];
+    var minutes = this.state.minutesList[this.state.selectedMinutes];
+    var seconds = this.state.secondsList[this.state.selectedSeconds];
 
     const pickerArray = [
-      {pickerName: 'hrs', currentValue: selectedHours, valueToChange: 'Hours', list: hoursList},
-      {pickerName: 'min', currentValue: selectedMinutes, valueToChange: 'Minutes', list: minutesList},
-      {pickerName: 'sec', currentValue: selectedSeconds, valueToChange: 'Seconds', list: secondsList}
+      {pickerName: 'hrs', currentValue: this.state.selectedHours, valueToChange: 'Hours', list: this.state.hoursList},
+      {pickerName: 'min', currentValue: this.state.selectedMinutes, valueToChange: 'Minutes', list: this.state.minutesList},
+      {pickerName: 'sec', currentValue: this.state.selectedSeconds, valueToChange: 'Seconds', list: this.state.secondsList}
     ];
     const formatColorArray = [
-      {formatColor: 'white', color: 'WHITE', timeControl: whiteTime},
-      {formatColor: 'black', color: 'BLACK', timeControl: blackTime}
+      {formatColor: 'white', color: 'WHITE', timeControl: this.state.whiteTime},
+      {formatColor: 'black', color: 'BLACK', timeControl: this.state.blackTime}
     ];
     const compensationTypes = ['INCREMENT', 'DELAY'];
     const formatTypes = ['REGULAR', 'HANDICAP'];
@@ -194,11 +158,11 @@ export class Settings extends Component {
             <SegmentedControls
               options={formatTypes}
               onSelection={(selectedOption) => this.setState({formatType: selectedOption})}
-              selectedOption={formatType}
+              selectedOption={this.state.formatType}
             />
           </View>
           {
-            formatType == 'REGULAR' ?
+            this.state.formatType == 'REGULAR' ?
             (
               <TouchableWithoutFeedback onPress={() => this.toggleTimeDialog('timeControl', 'both')}>
                 <View style={[styles.center, styles.timeButton]}>
@@ -206,7 +170,7 @@ export class Settings extends Component {
                     <Text style={[styles.timeTitle]}>TIME CONTROL:</Text>
                   </View>
                   <View style={{flex: 1, alignItems: 'center'}}>
-                    <Text style={[styles.time]}>GAME IN {whiteTime}</Text>
+                    <Text style={[styles.time]}>GAME IN {this.state.whiteTime}</Text>
                   </View>
                 </View>
               </TouchableWithoutFeedback>
@@ -230,7 +194,7 @@ export class Settings extends Component {
             <SegmentedControls
               options={compensationTypes}
               onSelection={(selectedOption) => this.setState({compensationType: selectedOption})}
-              selectedOption={compensationType}
+              selectedOption={this.state.compensationType}
             />
           </View>
           <TouchableWithoutFeedback onPress={() => this.toggleTimeDialog('compensation', 'both')}>
@@ -239,7 +203,7 @@ export class Settings extends Component {
                 <Text style={[styles.timeTitle]}>COMPENSATION:</Text>
               </View>
               <View style={{flex: 1, alignItems: 'center'}}>
-                <Text style={[styles.time]}>{compensationType} {compensation}</Text>
+                <Text style={[styles.time]}>{this.state.compensationType} {this.state.compensation}</Text>
               </View>
             </View>
           </TouchableWithoutFeedback>
@@ -252,7 +216,7 @@ export class Settings extends Component {
           </TouchableWithoutFeedback>
         </View>
 
-        <Dialog.Container visible={timeDialogVisible}>
+        <Dialog.Container visible={this.state.timeDialogVisible}>
           <View style={[styles.center, {flex: 1, backgroundColor: '#006666'}]}>
             <View style={{flexDirection: 'row'}}>
               {
@@ -277,11 +241,11 @@ export class Settings extends Component {
               }
             </View>
             <Text style={{fontSize: 50, color: 'white'}}>
-              {timeDialogMode == 'timeControl' ? (hours + ' :') : ''} {minutes} : {seconds}
+              {this.state.timeDialogMode == 'timeControl' ? (hours + ' :') : ''} {minutes} : {seconds}
             </Text>
           </View>
-          <Dialog.Button label="CANCEL" onPress={() => this.toggleTimeDialog(timeDialogMode)} />
-          <Dialog.Button label="OKAY" onPress={() => this.createTime(timeDialogMode)} />
+          <Dialog.Button label="CANCEL" onPress={() => this.toggleTimeDialog(this.state.timeDialogMode)} />
+          <Dialog.Button label="OKAY" onPress={() => this.createTime(this.state.timeDialogMode)} />
         </Dialog.Container>
       </View>
     );
