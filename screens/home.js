@@ -78,24 +78,34 @@ export class Home extends Component {
     return time.split(':').reduce((acc, curr) => (60 * parseInt(acc, 10)) + parseInt(curr, 10));
   }
 
-  countDown(player) {
-    var currentTime = this.state.playerTurn == 'white' ? this.state.currentWhiteTime : this.state.currentBlackTime;
-    var timeInSeconds = this.convertToSeconds(currentTime);
-    timeInSeconds = timeInSeconds ? timeInSeconds - 1 : timeInSeconds;
-
-    var hours   = Math.floor(timeInSeconds / 3600);
-    var minutes = Math.floor((timeInSeconds - (hours * 3600)) / 60);
-    var seconds = timeInSeconds - (hours * 3600) - (minutes * 60);
+  convertToHHMMSS(time) {
+    var hours   = Math.floor(time / 3600);
+    var minutes = Math.floor((time - (hours * 3600)) / 60);
+    var seconds = time - (hours * 3600) - (minutes * 60);
 
     hours = hours < 10 ? '0' + hours : '' + hours;
     minutes = minutes < 10 ? '0' + minutes : '' + minutes;
     seconds = seconds < 10 ? '0' + seconds : '' + seconds;
 
-    var timeLeft = (hours != '00' ? hours + ':' : '') + minutes + ':' + seconds;
+    return (hours != '00' ? hours + ':' : '') + minutes + ':' + seconds;
+  }
+
+  countDown(player) {
+    var currentTime = this.state.playerTurn == 'white' ? this.state.currentWhiteTime : this.state.currentBlackTime;
+    var timeInSeconds = this.convertToSeconds(currentTime);
+    timeInSeconds -= 1;
+
+    var timeLeft = this.convertToHHMMSS(timeInSeconds);
+
     this.setState({
       currentWhiteTime: this.state.playerTurn == 'white' ? timeLeft : this.state.currentWhiteTime,
       currentBlackTime: this.state.playerTurn == 'black' ? timeLeft : this.state.currentBlackTime
     });
+  }
+
+  addIncrement(time, increment) {
+    var newTime = this.convertToSeconds(time) + this.convertToSeconds(increment);
+    return this.convertToHHMMSS(newTime);
   }
 
   pauseClock() {
@@ -115,13 +125,20 @@ export class Home extends Component {
     }
   }
 
-  pressClock(player) {
+  pressClock() {
+    var currentWhiteTime = this.state.currentWhiteTime;
+    var currentBlackTime = this.state.currentBlackTime;
+    var compensation = this.state.compensation;
+    var shouldWhiteReceiveIncrement = this.state.playerTurn == 'white' && this.state.compensationType == 'INCREMENT';
+    var shouldBlackReceiveIncrement = this.state.playerTurn == 'black' && this.state.compensationType == 'INCREMENT';
     clearInterval(this.state.countDownInterval);
 
     this.setState({
       playerTurn: this.state.playerTurn == 'white' ? 'black' : 'white',
       whiteMoves: this.state.playerTurn == 'white' ? this.state.whiteMoves + 1 : this.state.whiteMoves,
       blackMoves: this.state.playerTurn == 'black' ? this.state.blackMoves + 1 : this.state.blackMoves,
+      currentWhiteTime: shouldWhiteReceiveIncrement  ? this.addIncrement(currentWhiteTime, compensation) : currentWhiteTime,
+      currentBlackTime: shouldBlackReceiveIncrement ? this.addIncrement(currentBlackTime, compensation) : currentBlackTime,
       countDownInterval: setInterval(() => this.countDown(this.state.playerTurn), 1000)
     });
     tick.play();
@@ -140,7 +157,7 @@ export class Home extends Component {
          disabled={
            (this.state.gameInProgress && this.state.playerTurn == 'white' && this.convertToSeconds(whiteTime)) ? false : true
          }
-         onPress={() => this.pressClock('white')}
+         onPress={() => this.pressClock()}
         >
           <View style={[{flex: 1, backgroundColor: whiteColor, borderRadius: 20}]}>
             <View style={[styles.center, {flex: 0.3}]}>
@@ -196,7 +213,7 @@ export class Home extends Component {
          disabled={
            (this.state.gameInProgress && this.state.playerTurn == 'black' && this.convertToSeconds(blackTime)) ? false : true
          }
-         onPress={() => this.pressClock('black')}
+         onPress={() => this.pressClock()}
         >
           <View style={[{flex: 1, backgroundColor: blackColor, borderRadius: 20}]}>
             <View style={[styles.center, {flex: 0.3}]}>
