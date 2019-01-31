@@ -35,7 +35,7 @@ export class Home extends Component {
       playerTurn: null,
       whiteMoves: 0,
       blackMoves: 0,
-      delayTimeLeft: 0
+      delayTime: 0
     };
   }
 
