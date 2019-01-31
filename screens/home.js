@@ -27,13 +27,15 @@ export class Home extends Component {
       currentBlackTime: '05:00',
       compensation: '00:05',
       compensationType: 'INCREMENT',
+      formatType: 'REGULAR',
       countDownInterval: null,
       gameStarted: false,
       gameInProgress: false,
       resetDialogVisible: false,
       playerTurn: null,
       whiteMoves: 0,
-      blackMoves: 0
+      blackMoves: 0,
+      delayTimeLeft: 0
     };
   }
 
@@ -70,7 +72,8 @@ export class Home extends Component {
 
     this.setState({
       currentWhiteTime: this.state.initialWhiteTime,
-      currentBlackTime: this.state.initialBlackTime
+      currentBlackTime: this.state.initialBlackTime,
+      delayTime: 0
     });
   }
 
@@ -91,15 +94,19 @@ export class Home extends Component {
   }
 
   countDown(player) {
+    var delayTime = this.state.delayTime;
+    var compensation = this.state.compensation;
+    var compensationType = this.state.compensationType;
     var currentTime = this.state.playerTurn == 'white' ? this.state.currentWhiteTime : this.state.currentBlackTime;
     var timeInSeconds = this.convertToSeconds(currentTime);
-    timeInSeconds -= 1;
+    timeInSeconds = compensationType == 'DELAY' && delayTime < this.convertToSeconds(compensation) ? timeInSeconds : timeInSeconds - 1;
 
     var timeLeft = this.convertToHHMMSS(timeInSeconds);
 
     this.setState({
       currentWhiteTime: this.state.playerTurn == 'white' ? timeLeft : this.state.currentWhiteTime,
-      currentBlackTime: this.state.playerTurn == 'black' ? timeLeft : this.state.currentBlackTime
+      currentBlackTime: this.state.playerTurn == 'black' ? timeLeft : this.state.currentBlackTime,
+      delayTime: this.state.compensationType == 'DELAY' ? this.state.delayTime + 1 : 0
     });
   }
 
@@ -139,7 +146,8 @@ export class Home extends Component {
       blackMoves: this.state.playerTurn == 'black' ? this.state.blackMoves + 1 : this.state.blackMoves,
       currentWhiteTime: shouldWhiteReceiveIncrement  ? this.addIncrement(currentWhiteTime, compensation) : currentWhiteTime,
       currentBlackTime: shouldBlackReceiveIncrement ? this.addIncrement(currentBlackTime, compensation) : currentBlackTime,
-      countDownInterval: setInterval(() => this.countDown(this.state.playerTurn), 1000)
+      countDownInterval: setInterval(() => this.countDown(this.state.playerTurn), 1000),
+      delayTime: 0
     });
     tick.play();
   }
@@ -179,7 +187,16 @@ export class Home extends Component {
                   name='cog'
                   size={50}
                   color='black'
-                  onPress={() => this.props.navigation.navigate('settings', {onSelect: this.onSelect})}
+                  onPress={
+                    () => this.props.navigation.navigate('settings', {
+                      onSelect: this.onSelect,
+                      whiteTime: this.state.initialWhiteTime,
+                      blackTime: this.state.initialBlackTime,
+                      compensation: this.state.compensation,
+                      compensationType: this.state.compensationType,
+                      formatType: this.state.formatType
+                    })
+                  }
                 />
               </View>
             ) : null

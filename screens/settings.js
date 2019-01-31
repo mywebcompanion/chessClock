@@ -31,13 +31,14 @@ export class Settings extends Component {
 
   constructor(props) {
     super(props);
+    const { navigation } = this.props;
     this.state = {
-      whiteTime: '05:00',
-      blackTime: '05:00',
-      compensation: '00:05',
-      compensationType: 'INCREMENT',
+      whiteTime: navigation.getParam('whiteTime'),
+      blackTime: navigation.getParam('blackTime'),
+      compensation: navigation.getParam('compensation'),
+      compensationType: navigation.getParam('compensationType'),
+      formatType: navigation.getParam('formatType'),
       timeDialogMode: 'timeControl',
-      formatType: 'REGULAR',
       formatColor: 'both',
       selectedHours : 0,
       selectedMinutes: 0,
@@ -122,6 +123,7 @@ export class Settings extends Component {
       initialBlackTime: this.state.formatType == 'REGULAR' ? this.state.whiteTime : this.state.blackTime,
       compensation: this.state.compensation,
       compensationType: this.state.compensationType,
+      formatType: this.state.formatType,
       gameStarted: false,
       gameInProgress: false,
       playerTurn: null,
