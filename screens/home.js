@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {
+  AsyncStorage,
   Button,
   StyleSheet,
   Text,
@@ -150,6 +151,26 @@ export class Home extends Component {
       delayTime: 0
     });
     tick.play();
+  }
+
+  retrieveData = async () => {
+    const initialWhiteTime = await AsyncStorage.getItem('initialWhiteTime') || '05:00';
+    const initialBlackTime = await AsyncStorage.getItem('initialBlackTime') || '05:00';
+    const compensation = await AsyncStorage.getItem('compensation') || '00:05';
+    const compensationType = await AsyncStorage.getItem('compensationType') || 'INCREMENT';
+    const formatType = await AsyncStorage.getItem('formatType') || 'REGULAR';
+
+    this.setState({
+      initialWhiteTime: initialWhiteTime,
+      initialBlackTime: initialBlackTime,
+      compensation: compensation,
+      compensationType: compensationType,
+      formatType: formatType
+    });
+  }
+
+  componentDidMount() {
+    this.retrieveData();
   }
 
   render() {

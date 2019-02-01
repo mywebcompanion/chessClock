@@ -1,5 +1,6 @@
 import React, {Component} from 'react';
 import {
+  AsyncStorage,
   Button,
   Image,
   StyleSheet,
@@ -130,6 +131,15 @@ export class Settings extends Component {
       whiteMoves: 0,
       blackMoves: 0
     });
+    this.saveData();
+  }
+
+  saveData = async () => {
+    AsyncStorage.setItem( 'initialWhiteTime', this.state.whiteTime);
+    AsyncStorage.setItem( 'initialBlackTime', this.state.blackTime);
+    AsyncStorage.setItem( 'compensation', this.state.compensation);
+    AsyncStorage.setItem( 'compensationType', this.state.compensationType);
+    AsyncStorage.setItem( 'formatType', this.state.formatType);
   }
 
   render() {
