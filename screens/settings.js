@@ -22,7 +22,7 @@ export class Settings extends Component {
     ),
     title: 'Settings',
     headerStyle: {
-      backgroundColor: '#4ddbff',
+      backgroundColor: '#33bbff',
     },
     headerTintColor: '#fff',
     headerTitleStyle: {
@@ -69,22 +69,6 @@ export class Settings extends Component {
     };
   }
 
-  changeTime(type, index) {
-    if(type == 'Hours') {
-      this.setState({
-          selectedHours: index
-      });
-    }else if(type == 'Minutes') {
-      this.setState({
-          selectedMinutes: index
-      });
-    }else {
-      this.setState({
-          selectedSeconds: index
-      })
-    }
-  }
-
   toggleTimeDialog(mode, color) {
     var timeControl = color == 'black' ? this.state.blackTime : this.state.whiteTime;
     var timeArray = mode == 'timeControl' ? timeControl.split(':') : this.state.compensation.split(':');
@@ -102,6 +86,22 @@ export class Settings extends Component {
     });
   }
 
+  changeTime(type, index) {
+    if(type == 'Hours') {
+      this.setState({
+          selectedHours: index
+      });
+    }else if(type == 'Minutes') {
+      this.setState({
+          selectedMinutes: index
+      });
+    }else {
+      this.setState({
+          selectedSeconds: index
+      })
+    }
+  }
+
   createTime(mode) {
     var hours = this.state.hoursList[this.state.selectedHours];
     var minutes = this.state.minutesList[this.state.selectedMinutes];
@@ -114,6 +114,14 @@ export class Settings extends Component {
       compensation: mode == 'compensation' ? newTime : this.state.compensation,
       timeDialogVisible: !this.state.timeDialogVisible
     });
+  }
+
+  saveData = async () => {
+    AsyncStorage.setItem( 'initialWhiteTime', this.state.whiteTime);
+    AsyncStorage.setItem( 'initialBlackTime', this.state.blackTime);
+    AsyncStorage.setItem( 'compensation', this.state.compensation);
+    AsyncStorage.setItem( 'compensationType', this.state.compensationType);
+    AsyncStorage.setItem( 'formatType', this.state.formatType);
   }
 
   goBack() {
@@ -132,14 +140,6 @@ export class Settings extends Component {
       blackMoves: 0
     });
     this.saveData();
-  }
-
-  saveData = async () => {
-    AsyncStorage.setItem( 'initialWhiteTime', this.state.whiteTime);
-    AsyncStorage.setItem( 'initialBlackTime', this.state.blackTime);
-    AsyncStorage.setItem( 'compensation', this.state.compensation);
-    AsyncStorage.setItem( 'compensationType', this.state.compensationType);
-    AsyncStorage.setItem( 'formatType', this.state.formatType);
   }
 
   render() {
@@ -220,16 +220,16 @@ export class Settings extends Component {
             </View>
           </TouchableWithoutFeedback>
         </View>
-        <View style={[styles.center, {flex: 0.2}]}>
+        <View style={[styles.center, {flex: 0.25}]}>
           <TouchableWithoutFeedback onPress={() => this.goBack()}>
             <View style={[styles.center, styles.readyButton]}>
-              <Text style={[styles.readyButtonText]}>READY</Text>
+              <Text style={[styles.readyButtonText]}>START</Text>
             </View>
           </TouchableWithoutFeedback>
         </View>
 
         <Dialog.Container visible={this.state.timeDialogVisible}>
-          <View style={[styles.center, {flex: 1, backgroundColor: '#006666'}]}>
+          <View style={[styles.center, {flex: 1, backgroundColor: '#009999'}]}>
             <View style={{flexDirection: 'row'}}>
               {
                 pickerArray.map((picker, i) => (
@@ -276,12 +276,12 @@ const styles = StyleSheet.create({
   },
   readyButtonText: {
     color: 'white',
-    fontSize: 50,
+    fontSize: 40,
     fontWeight: 'bold'
   },
   time: {
     color: '#595959',
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: 'bold'
   },
   timeButton: {
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
   },
   timeTitle: {
     color: 'black',
-    fontSize: 20,
+    fontSize: 15,
     fontWeight: 'bold'
   }
 });

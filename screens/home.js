@@ -21,23 +21,7 @@ export class Home extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      initialWhiteTime: '05:00',
-      initialBlackTime: '05:00',
-      currentWhiteTime: '05:00',
-      currentBlackTime: '05:00',
-      compensation: '00:05',
-      compensationType: 'INCREMENT',
-      formatType: 'REGULAR',
-      countDownInterval: null,
-      gameStarted: false,
-      gameInProgress: false,
-      resetDialogVisible: false,
-      playerTurn: null,
-      whiteMoves: 0,
-      blackMoves: 0,
-      delayTime: 0
-    };
+    this.state = {initialWhiteTime: '', initialBlackTime: '', whiteMoves: 0, blackMoves: 0};
   }
 
   onSelect = data => {
@@ -61,7 +45,7 @@ export class Home extends Component {
         blackMoves: 0
       });
       clearInterval(this.state.countDownInterval);
-    } else {
+    }else {
       this.setState({
         gameStarted: true,
         gameInProgress: true,
@@ -99,38 +83,21 @@ export class Home extends Component {
     var compensation = this.state.compensation;
     var compensationType = this.state.compensationType;
     var currentTime = this.state.playerTurn == 'white' ? this.state.currentWhiteTime : this.state.currentBlackTime;
+
     var timeInSeconds = this.convertToSeconds(currentTime);
     timeInSeconds = compensationType == 'DELAY' && delayTime < this.convertToSeconds(compensation) ? timeInSeconds : timeInSeconds - 1;
-
     var timeLeft = this.convertToHHMMSS(timeInSeconds);
 
     this.setState({
       currentWhiteTime: this.state.playerTurn == 'white' ? timeLeft : this.state.currentWhiteTime,
       currentBlackTime: this.state.playerTurn == 'black' ? timeLeft : this.state.currentBlackTime,
-      delayTime: this.state.compensationType == 'DELAY' ? this.state.delayTime + 1 : 0
+      delayTime: compensationType == 'DELAY' ? delayTime + 1 : 0
     });
   }
 
   addIncrement(time, increment) {
     var newTime = this.convertToSeconds(time) + this.convertToSeconds(increment);
     return this.convertToHHMMSS(newTime);
-  }
-
-  pauseClock() {
-    if(this.state.gameStarted) {
-      if(this.state.gameInProgress) {
-        clearInterval(this.state.countDownInterval);
-      }else {
-        this.setState({
-          countDownInterval: setInterval(() => this.countDown(this.state.playerTurn), 1000)
-        });
-      }
-      this.setState({
-        gameInProgress: !this.state.gameInProgress,
-      });
-    } else {
-      this.startClock();
-    }
   }
 
   pressClock() {
@@ -153,12 +120,29 @@ export class Home extends Component {
     tick.play();
   }
 
+  pauseClock() {
+    if(this.state.gameStarted) {
+      if(this.state.gameInProgress) {
+        clearInterval(this.state.countDownInterval);
+      }else {
+        this.setState({
+          countDownInterval: setInterval(() => this.countDown(this.state.playerTurn), 1000)
+        });
+      }
+      this.setState({
+        gameInProgress: !this.state.gameInProgress,
+      });
+    }else {
+      this.startClock();
+    }
+  }
+
   retrieveData = async () => {
-    const initialWhiteTime = await AsyncStorage.getItem('initialWhiteTime') || '05:00';
-    const initialBlackTime = await AsyncStorage.getItem('initialBlackTime') || '05:00';
-    const compensation = await AsyncStorage.getItem('compensation') || '00:05';
-    const compensationType = await AsyncStorage.getItem('compensationType') || 'INCREMENT';
-    const formatType = await AsyncStorage.getItem('formatType') || 'REGULAR';
+    var initialWhiteTime = await AsyncStorage.getItem('initialWhiteTime') || '05:00';
+    var initialBlackTime = await AsyncStorage.getItem('initialBlackTime') || '05:00';
+    var compensation = await AsyncStorage.getItem('compensation') || '00:05';
+    var compensationType = await AsyncStorage.getItem('compensationType') || 'INCREMENT';
+    var formatType = await AsyncStorage.getItem('formatType') || 'REGULAR';
 
     this.setState({
       initialWhiteTime: initialWhiteTime,
@@ -176,9 +160,9 @@ export class Home extends Component {
   render() {
     var whiteTime = this.state.gameStarted ? this.state.currentWhiteTime : this.state.initialWhiteTime;
     var blackTime = this.state.gameStarted ? this.state.currentBlackTime : this.state.initialBlackTime;
+    var playButton = this.state.gameInProgress ? 'pause' : 'play';
     var whiteColor = this.state.playerTurn == 'white' ? (this.convertToSeconds(whiteTime) ? '#3399ff' : '#ff0000') : '#808080';
     var blackColor = this.state.playerTurn == 'black' ? (this.convertToSeconds(blackTime) ? '#3399ff' : '#ff0000') : '#808080';
-    var playButton = this.state.gameInProgress ? 'pause' : 'play';
 
     return (
       <View style={{flex: 1, padding: 10}}>
@@ -196,7 +180,7 @@ export class Home extends Component {
               <Text style={[styles.time, {transform: [{ rotate: '180deg'}]}]}>{whiteTime}</Text>
             </View>
             <View style={[styles.center, {flex: 0.3}]}>
-              <Icon name='chess-king' color='white' style={{transform: [{ rotate: '180deg'}]}} size={40} />
+              <Icon name='chess-king' color='white' style={{transform: [{ rotate: '180deg'}]}} size={30} />
             </View>
           </View>
         </TouchableWithoutFeedback>
@@ -206,7 +190,7 @@ export class Home extends Component {
               <View style={[styles.center, {flex: 1}]}>
                 <Icon
                   name='cog'
-                  size={50}
+                  size={40}
                   color='black'
                   onPress={
                     () => this.props.navigation.navigate('settings', {
@@ -227,7 +211,7 @@ export class Home extends Component {
               this.convertToSeconds(whiteTime) && this.convertToSeconds(blackTime) ? (
                 <Icon
                   name={playButton}
-                  size={50}
+                  size={40}
                   color='black'
                   onPress={() => this.pauseClock()}
                 />
@@ -239,7 +223,7 @@ export class Home extends Component {
               <View style={[styles.center, {flex: 1}]}>
                 <Icon
                   name='redo'
-                  size={50}
+                  size={40}
                   color='black'
                   onPress={() => this.resetClock()}
                 />
@@ -255,7 +239,7 @@ export class Home extends Component {
         >
           <View style={[{flex: 1, backgroundColor: blackColor, borderRadius: 20}]}>
             <View style={[styles.center, {flex: 0.3}]}>
-              <Icon name='chess-king' color='black' size={40} />
+              <Icon name='chess-king' color='black' size={30} />
             </View>
             <View style={[styles.center, {flex: 1}]}>
               <Text style={[styles.time]}>{blackTime}</Text>
@@ -292,12 +276,12 @@ const styles = StyleSheet.create({
     fontWeight: 'bold'
   },
   options: {
-    flex: 0.5,
+    flex: 0.3,
     margin: 5,
     flexDirection: 'row'
   },
   time: {
-    fontSize: 120,
+    fontSize: 90,
     fontFamily: 'DigitalClock',
     color: 'white'
   }
