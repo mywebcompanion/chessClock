@@ -1,11 +1,9 @@
 import React, {Component} from 'react';
 import {
   AsyncStorage,
-  Button,
   Image,
   StyleSheet,
   Text,
-  TextInput,
   TouchableWithoutFeedback,
   View
 } from 'react-native';
